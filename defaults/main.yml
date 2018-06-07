@@ -1,0 +1,61 @@
+---
+#mysql_provider: <percona|mariadb> 
+
+mysql_provider: mariadb
+
+# Enable vendor repo
+enable_mysql_repo: True
+install_mysql_from_pkgs: False
+
+percona_release: 0.1-6
+percona_version: 5.6
+mariadb_release: 10.3
+mariadb_version: 10.3.7
+
+# Configure MySQL root user/password
+mysql_root_username: root
+mysql_root_password: "{{vault_mysql_root_password}}"
+
+# Configure basic MySQL variables
+mysql_daemon: mysql
+mysql_daemon_user: mysql
+mysql_config_dir: /etc/mysql/conf.d
+mysql_socket: /var/run/mysqld/mysqld.sock
+mysql_pid: /var/run/mysqld/mysqld.pid
+
+# Set whether to use Galera multi-master clustering or non-clustered installation
+galera_clustering: True
+
+# False default for bootstrapping 
+galera_bootstrapping: False
+
+# Cluster Check Configuration
+galera_clustercheck_enable: True
+galera_clustercheck_username: clustercheck
+galera_clustercheck_password: "{{vault_galera_clustercheck_password}}"
+
+# Configure Galera WSREP
+galera_wsrep_cluster_address: []
+galera_bootstrap_node: []
+galera_wsrep_on: On
+galera_mysql_datadir: /var/lib/mysql
+galera_wsrep_provider: /usr/lib/galera3/libgalera_smm.so
+galera_wsrep_cluster_name: galera_cluster
+galera_wsrep_slave_threads: 1
+galera_wsrep_certify_nonPK: 1
+galera_wsrep_max_ws_rows: 131072
+galera_wsrep_max_ws_size: 1073741824
+galera_wsrep_debug: 0
+galera_wsrep_convert_lock_to_trx: 0
+galera_wsrep_retry_autocommit: 1
+galera_wsrep_auto_increment_control: 1
+galera_wsrep_drupal_282555_workaround: 0
+galera_wsrep_causal_reads: 0
+galera_wsrep_notify_cmd: ""
+galera_wsrep_sst_method: rsync
+
+# Add MySQL databases
+mysql_databases: []
+
+# Add MySQL users
+mysql_users: []

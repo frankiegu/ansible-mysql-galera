@@ -1,0 +1,61 @@
+---
+
+- name: Adding MariaDB Galera Apt Key
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: C74CD1D8
+  when: 
+    - mysql_provider == "mariadb"
+    - enable_mysql_repo
+
+- name: Adding MariaDB Galera Repo
+  apt_repository:
+    repo: "deb [arch=amd64,i386,ppc64el] http://ftp.utexas.edu/mariadb/repo/{{ mariadb_release }}/ubuntu xenial main"
+    state: present
+    filename: mariadb-galera
+  when: 
+    - mysql_provider == "mariadb"
+    - enable_mysql_repo
+
+- name: Adding Percona Repo
+  apt:
+    deb: "https://repo.percona.com/apt/percona-release_{{ percona_release }}.xenial_all.deb"
+  when: 
+    - mysql_provider == "percona"
+    - enable_mysql_repo
+
+- name: Set MySQL root password in debconf
+  shell: |
+    debconf-set-selections <<< "mariadb-server-{{ mariadb_release }} mysql-server/root_password password {{ mysql_root_password }}"
+    debconf-set-selections <<< "mariadb-server-{{ mariadb_release }} mysql-server/root_password_again password {{ mysql_root_password }}"
+  args:
+    executable: /bin/bash
+  when: 
+    - install_mysql_from_pkgs
+    - mysql_provider == "mariadb"
+
+- name: Install Database Dependency Packages
+  apt:
+    name: "{{ mysql_deps_packages }}"
+    state: present
+    update_cache: yes
+
+- name: Copy MySQL Packages
+  copy:
+    src: "debs/{{ item }}"
+    dest: "/opt/{{ item }}"
+  with_items: "{{ local_mysql_pkgs }}"
+  when: install_mysql_from_pkgs
+
+- name: Install MySQL from local packages
+  shell: apt-get -y install /opt/*.deb
+  args:
+    executable: /bin/bash
+  when: install_mysql_from_pkgs
+
+- name: Install MySQL packages
+  apt:
+    name: "{{ mysql_packages }}"
+    state: present
+    update_cache: yes
+  when: not install_mysql_from_pkgs

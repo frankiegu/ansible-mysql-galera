@@ -1,0 +1,21 @@
+---
+mysql_daemon: mariadb
+mysql_config_dir: /etc/mysql/mariadb.conf.d
+
+mysql_deps_packages:
+  - python3-pymysql
+  - python3-mysqldb
+  - rsync
+  - xinetd
+
+mysql_packages:
+  - "mariadb-server-{{ mariadb_version }}"
+  - "mariadb-client-{{ mariadb_version }}"
+
+local_mysql_pkgs:
+  - "mariadb-client-{{mariadb_version}}.deb"
+  - "mariadb-client-core-{{mariadb_version}}.deb"
+  - "mariadb-common-{{mariadb_version}}.deb"
+  - "mariadb-server-{{mariadb_version}}.deb"
+  - "mariadb-server-core-{{mariadb_version}}.deb"
+  - "galera-3_25.3.23-xenial_amd64.deb"

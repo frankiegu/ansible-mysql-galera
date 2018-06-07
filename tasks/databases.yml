@@ -1,0 +1,9 @@
+---
+- name: create mysql databases
+  mysql_db:
+    name: "{{ item.name }}"
+    collation: "{{ item.collation }}"
+    encoding: "{{ item.encoding }}"
+    state: present
+  with_items: "{{ mysql_databases }}"
+  run_once: True

@@ -1,0 +1,29 @@
+---
+
+- name: Include OS and MySQL Provider Specific Variables
+  include_vars: "{{ ansible_os_family }}-{{ mysql_provider }}.yml"
+
+
+# Install
+- include_tasks: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+# Configure 
+- include_tasks: config.yml
+- include_tasks: limits.yml
+- include_tasks: secure.yml
+
+# Set up Galera Clustering
+- include_tasks: galera.yml
+  when: galera_clustering
+  
+# Add databases and users
+- include_tasks: databases.yml
+- include_tasks: users.yml
+
+# Configure clustercheck 
+- include_tasks: clustercheck.yml
+  when: galera_clustercheck_enable

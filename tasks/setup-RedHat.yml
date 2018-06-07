@@ -1,0 +1,45 @@
+---
+
+- name: Adding MariaDB Galera Repo
+  yum_repository:
+    name: mariadb-galera
+    description: MariaDB Galera
+    baseurl: "http://yum.mariadb.org/{{mariadb_release}}/centos7-amd64/"
+    file: mariadb-galera
+    gpgcheck: no
+    enabled: yes
+  when: 
+    - mysql_provider == "mariadb"
+    - enable_mysql_repo
+
+- name: Adding Percona Repo
+  yum:
+    name: "http://www.percona.com/downloads/percona-release/redhat/{{percona_release}}/percona-release-{{percona_release}}.noarch.rpm"
+    state: Present
+  when: 
+    - mysql_provider == "percona"
+    - enable_mysql_repo
+
+- name: Install Database Dependency Packages
+  yum:
+    name: "{{ mysql_deps_packages }}"
+    state: installed
+
+- name: Copy MySQL Packages
+  copy:
+    src: "rpms/{{ item }}"
+    dest: "/opt/{{ item }}"
+  with_items: "{{ local_mysql_pkgs }}"
+  when: install_mysql_from_pkgs
+
+- name: Install MySQL from local packages
+  shell: yum -y install /opt/*.rpm
+  args:
+    executable: /bin/bash
+  when: install_mysql_from_pkgs
+
+- name: Install MySQL packages
+  yum:
+    name: "{{ mysql_packages }}"
+    state: installed
+  when: not install_mysql_from_pkgs

@@ -1,0 +1,38 @@
+---
+
+- name: copy clustercheck script
+  template:
+    src: clustercheck.conf.j2
+    dest: /usr/bin/clustercheck
+    owner: root
+    group: root
+    mode: 0755
+
+- name: galera monitor file
+  copy:
+    src: mysqlchk
+    dest: /etc/xinetd.d/mysqlchk
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Ensure xinetd service is started and enabled on boot.
+  service:
+    name: xinetd
+    state: started
+    enabled: yes
+
+- name: add mysqlchk xinetd service
+  lineinfile:
+    path: /etc/services
+    line: "mysqlchk 9200/tcp # mysqlchk"
+  notify: restart xinetd
+
+- name: Ensure clustercheck users are present.
+  mysql_user:
+    name: "{{ galera_clustercheck_username }}"
+    host: "localhost"
+    password: "{{ galera_clustercheck_password }}"
+    priv: "*.*:ALL"
+    state: present
+  run_once: True

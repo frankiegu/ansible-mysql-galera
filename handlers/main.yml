@@ -1,0 +1,15 @@
+---
+
+- name: restart mysql
+  service: name={{ mysql_daemon }} state=restarted
+
+- name: bootstrap node
+  shell: /usr/libexec/mysqld --wsrep-new-cluster --user={{ mysql_daemon_user }} &
+
+- name: reload systemctl
+  shell: systemctl daemon-reload
+
+- name: restart xinetd
+  service:
+    name: xinetd
+    state: restarted

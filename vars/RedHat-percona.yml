@@ -1,0 +1,9 @@
+---
+mysql_deps_packages:
+  - "MySQL-python"
+  - "rsync"
+  - "xinetd"
+
+mysql_packages:
+  - "percona-xtradb-cluster-server-{{percona_version}}"
+  - "percona-xtradb-cluster-client-{{percona_version}}"

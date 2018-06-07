@@ -1,0 +1,48 @@
+---
+- name: stop mysql
+  service:
+    name: "{{ mysql_daemon }}"
+    state: stopped
+  when: "{{ galera_bootstrapping | default('False') }}"
+
+- name: Adding Galera Configuration.
+  template:
+    src: galera.cnf.j2
+    dest: "{{ mysql_config_dir }}/galera.cnf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Bootstraping the Cluster.
+  shell: |
+    #/usr/libexec/mysqld --wsrep-new-cluster --user={{ mysql_daemon_user }} &
+    /bin/sh /usr/bin/mysqld_safe --datadir={{galera_mysql_datadir}} --pid-file={{mysql_pid}} --wsrep-new-cluster --user={{ mysql_daemon_user }} &
+  when: 
+    - inventory_hostname == "{{ galera_bootstrap_node }}"
+    - "{{ galera_bootstrapping | default('False') }}"
+
+- name: Start the other nodes.
+  service:
+    name: "{{ mysql_daemon }}"
+    state: restarted
+  when: 
+    - inventory_hostname != "{{ galera_bootstrap_node }}"
+    - "{{ galera_bootstrapping | default('False') }}"
+
+- name: Wait for the cluster running and bootstrapped.
+  command: mysql -p{{ mysql_root_password }} --silent --skip-column-names -e 'SHOW STATUS LIKE "wsrep_cluster_size"'
+  register: galera_check_wait
+  until: galera_check_wait | success
+  run_once: True
+  when: "{{ galera_bootstrapping | default('False') }}"
+
+- name: Restart MySQL
+  shell: |
+    pkill -9 mysqld
+    rm -f {{ mysql_socket }} {{ mysql_pid }}
+    systemctl restart "{{ mysql_daemon }}"
+  when:
+    - "{{ galera_bootstrapping | default('False') }}"
+    - galera_check_wait.stdout | search("3")
+    - inventory_hostname == "{{ galera_bootstrap_node }}"
+

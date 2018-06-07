@@ -1,0 +1,19 @@
+---
+
+- pam_limits:
+    domain: "{{mysql_daemon}}"
+    limit_type: soft
+    limit_item: nofile
+    value: 64000
+    use_max: yes
+
+- name: create limits folder
+  file:
+    path: "/etc/systemd/system/{{mysql_daemon}}.service.d"
+    state: directory
+        
+- name: Set MySQL Filehandle Limits
+  notify: reload systemctl
+  copy:
+    src: limits.conf
+    dest: "/etc/systemd/system/{{mysql_daemon}}.service.d/override.conf"

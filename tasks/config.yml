@@ -1,0 +1,28 @@
+---
+- name: Adding MySQL Configuration
+  template:
+    src: mysqld.cnf.j2
+    dest: "{{ mysql_config_dir }}/mysqld.cnf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Set MySQL alternatives
+  shell: |
+    /usr/sbin/update-alternatives --install /etc/mysql/my.cnf my.cnf /etc/mysql/mariadb.cnf 0
+    /usr/sbin/update-alternatives --set my.cnf /etc/mysql/mariadb.cnf
+  args:
+    executable: /bin/bash
+  when: 
+    - install_mysql_from_pkgs
+    - mysql_provider == "mariadb"
+
+- name: Set MySQL alternatives
+  shell: |
+    /usr/sbin/update-alternatives --install /etc/mysql/my.cnf my.cnf /etc/mysql/percona.cnf 0
+    /usr/sbin/update-alternatives --set my.cnf /etc/mysql/percona.cnf
+  args:
+    executable: /bin/bash
+  when: 
+    - install_mysql_from_pkgs
+    - mysql_provider == "percona"

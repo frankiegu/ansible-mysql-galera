@@ -1,0 +1,7 @@
+- name: Deploy MySQL-Galera
+  hosts: openstack_mysql
+  become: True
+  gather_facts: True
+  tasks:
+    - include_role:
+        name: mysql-galera
